@@ -345,12 +345,19 @@ void LcdDigitsComponent::set_mode(LcdDigitsComponent::Mode mode) {
   if (mode_ == mode)
     return;
 
+  InterruptLock const lock;
+
   switch (mode) {
   case BufferMode:
-    timer1_enable(TIM_DIV256, TIM_EDGE, TIM_SINGLE);
+    timer1_attachInterrupt(s_timer_intr);
+    timer1_enable(TIM_DIV16, TIM_EDGE, TIM_LOOP);  // 5MHz (5 ticks/us - 1677721.4 us max)
+    timer1_write(1000);                            // 5kHz
+
     break;
   case ProgressMode:
     timer1_disable();
+    timer1_detachInterrupt();
+
     break;
   }
   mode_ = mode;
@@ -426,9 +433,10 @@ void LcdDigitsComponent::setup() {
   if (interrupt_data_.degree_pin)
     setup_output_pin(interrupt_data_.degree_pin, false);
 
-  timer1_attachInterrupt(&s_timer_intr);
-  timer1_write(50);
-  timer1_enable(TIM_DIV256, TIM_EDGE, TIM_SINGLE);
+  InterruptLock const lock;
+  timer1_attachInterrupt(s_timer_intr);
+  timer1_enable(TIM_DIV16, TIM_EDGE, TIM_LOOP);  // 5MHz (5 ticks/us - 1677721.4 us max)
+  timer1_write(1000);
 }
 
 uint8_t LcdDigitsComponent::print(uint8_t start_pos, const char *in_str) {
