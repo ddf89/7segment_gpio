@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include "esphome.h"
 #include "esphome/core/component.h"
 #include "esphome/core/hal.h"
 #include "esphome/core/helpers.h"
@@ -20,10 +19,6 @@
 
 #include <functional>
 #include <vector>
-
-#ifdef USE_ESP32_FRAMEWORK_ARDUINO
-#include <esp32-hal-timer.h>
-#endif
 
 namespace esphome {
 namespace lcd_digits {
@@ -113,7 +108,7 @@ public:
 
 private:
   static constexpr auto TAG = "lcd_digits";
-  hw_timer_t *timer = nullptr;
+  timer_t *timer = nullptr;
   optional<lcd_digits_writer_t> writer_{};
   LcdDigitsData interrupt_data_;
   LcdData display_data_;

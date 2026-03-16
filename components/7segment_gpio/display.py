@@ -1,19 +1,19 @@
 import esphome.codegen as cg
-import esphome.config_validation as cv
 from esphome.components import display
-from esphome.const import CONF_ID, CONF_INTENSITY, CONF_LAMBDA
+import esphome.config_validation as cv
+from esphome.const import (
+    CONF_ID,
+    CONF_INTENSITY,
+    CONF_LAMBDA,
+    __version__ as ESPHOME_VERSION,
+)
 from esphome.pins import gpio_output_pin_schema
-from esphome.const import __version__ as ESPHOME_VERSION
 
 lcd_digits_ns = cg.esphome_ns.namespace("lcd_digits")
-LcdDigitsComponent = lcd_digits_ns.class_(
-    "LcdDigitsComponent", cg.PollingComponent
-)
+LcdDigitsComponent = lcd_digits_ns.class_("LcdDigitsComponent", cg.PollingComponent)
 LcdDigitsComponentRef = LcdDigitsComponent.operator("ref")
 
-DisplayType = lcd_digits_ns.enum(
-    "DisplayType"
-)
+DisplayType = lcd_digits_ns.enum("DisplayType")
 DISPLAY_TYPE = {
     "COMMON_ANODE": DisplayType.CommonAnode,
     "COMMON_CATHODE": DisplayType.CommonCathode,
@@ -28,27 +28,22 @@ CONF_COMPENSATE_BRIGHTNESS = "compensate_brightness"
 CONF_COLON_PIN = "colon_pin"
 CONF_DEGREE_PIN = "degree_pin"
 
-CONFIG_SCHEMA = (
-    display.BASIC_DISPLAY_SCHEMA.extend(
-        {
-            cv.GenerateID(): cv.declare_id(LcdDigitsComponent),
-            cv.Optional(CONF_DIGIT_PINS): cv.ensure_list(
-                            gpio_output_pin_schema
-                        ),
-            cv.Required(CONF_SEGMENT_PINS): cv.ensure_list(
-                            gpio_output_pin_schema
-                        ),
-            cv.Optional(CONF_INTENSITY, default=15): cv.int_range(min=0, max=15),
-            cv.Optional(CONF_DISPLAY_TYPE, default="COMMON_ANODE"): cv.enum(DISPLAY_TYPE, upper=True),
-            cv.Optional(CONF_ITERATE_DIGITS, default=True): cv.boolean,
-            cv.Optional(CONF_COMPENSATE_BRIGHTNESS, default=False): cv.boolean,
-            cv.Optional(CONF_INTENSITY, default=15): cv.int_range(min=0, max=15),
-            cv.Optional(CONF_COLON_PIN): gpio_output_pin_schema,
-            cv.Optional(CONF_DEGREE_PIN): gpio_output_pin_schema,
-        }
-    )
-    .extend(cv.polling_component_schema("1s"))
-)
+CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend(
+    {
+        cv.GenerateID(): cv.declare_id(LcdDigitsComponent),
+        cv.Optional(CONF_DIGIT_PINS): cv.ensure_list(gpio_output_pin_schema),
+        cv.Required(CONF_SEGMENT_PINS): cv.ensure_list(gpio_output_pin_schema),
+        cv.Optional(CONF_INTENSITY, default=15): cv.int_range(min=0, max=15),
+        cv.Optional(CONF_DISPLAY_TYPE, default="COMMON_ANODE"): cv.enum(
+            DISPLAY_TYPE, upper=True
+        ),
+        cv.Optional(CONF_ITERATE_DIGITS, default=True): cv.boolean,
+        cv.Optional(CONF_COMPENSATE_BRIGHTNESS, default=False): cv.boolean,
+        cv.Optional(CONF_INTENSITY, default=15): cv.int_range(min=0, max=15),
+        cv.Optional(CONF_COLON_PIN): gpio_output_pin_schema,
+        cv.Optional(CONF_DEGREE_PIN): gpio_output_pin_schema,
+    }
+).extend(cv.polling_component_schema("1s"))
 
 
 async def to_code(config):
@@ -76,13 +71,15 @@ async def to_code(config):
     cg.add(var.set_intensity(config[CONF_INTENSITY]))
 
     if CONF_COLON_PIN in config:
-        cg.add(var.set_colon_pin(await cg.gpio_pin_expression(config[CONF_COLON_PIN])));
-    
+        cg.add(var.set_colon_pin(await cg.gpio_pin_expression(config[CONF_COLON_PIN])))  # pyright: ignore[reportArgumentType]
+
     if CONF_DEGREE_PIN in config:
-        cg.add(var.set_degree_pin(await cg.gpio_pin_expression(config[CONF_DEGREE_PIN])));
+        cg.add(
+            var.set_degree_pin(await cg.gpio_pin_expression(config[CONF_DEGREE_PIN]))  # type: ignore
+        )
 
     if CONF_LAMBDA in config:
         lambda_ = await cg.process_lambda(
             config[CONF_LAMBDA], [(LcdDigitsComponentRef, "it")], return_type=cg.void
         )
-        cg.add(var.set_writer(lambda_))
+        cg.add(var.set_writer(lambda_))  # type: ignore
