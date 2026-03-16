@@ -258,7 +258,6 @@ void IRAM_ATTR HOT LcdDigitsData::timer_interrupt() {
 
 void LcdDigitsComponent::set_segment_pins(std::vector<GPIOPin *> segment_pins) {
   ESP_LOGV(TAG, "Setting up segment pins");
-  assert(timer == nullptr);
   interrupt_data_.segment_pins = std::move(segment_pins);
   interrupt_data_.segment_pins.resize(
       std::min(size_t(8), interrupt_data_.segment_pins.size()));
@@ -266,19 +265,16 @@ void LcdDigitsComponent::set_segment_pins(std::vector<GPIOPin *> segment_pins) {
 
 void LcdDigitsComponent::set_degree_pin(GPIOPin *arg) {
   ESP_LOGV(TAG, "Setting up degree pin");
-  assert(timer == nullptr);
   interrupt_data_.degree_pin = arg;
 }
 
 void LcdDigitsComponent::set_colon_pin(GPIOPin *arg) {
   ESP_LOGV(TAG, "Setting up colon");
-  assert(timer == nullptr);
   interrupt_data_.colon_pin = arg;
 }
 
 void LcdDigitsComponent::set_digit_pins(std::vector<GPIOPin *> digit_pins) {
   ESP_LOGV(TAG, "Setting up digit pins");
-  assert(timer == nullptr);
   interrupt_data_.digit_pins = std::move(digit_pins);
   interrupt_data_.digit_pins.resize(
       std::min(size_t(max_digit_count), interrupt_data_.digit_pins.size()));
@@ -286,7 +282,6 @@ void LcdDigitsComponent::set_digit_pins(std::vector<GPIOPin *> digit_pins) {
 
 void LcdDigitsComponent::set_writer(lcd_digits_writer_t &&writer) {
   ESP_LOGV(TAG, "Setting up writer");
-  assert(timer == nullptr);
   writer_ = std::move(writer);
 }
 void LcdDigitsComponent::set_display_type(DisplayType arg) {
@@ -350,6 +345,14 @@ void LcdDigitsComponent::set_mode(LcdDigitsComponent::Mode mode) {
   if (mode_ == mode)
     return;
 
+  switch (mode) {
+  case BufferMode:
+    timer1_enable(TIM_DIV256, TIM_EDGE, TIM_SINGLE);
+    break;
+  case ProgressMode:
+    timer1_disable();
+    break;
+  }
   mode_ = mode;
 }
 
@@ -422,6 +425,10 @@ void LcdDigitsComponent::setup() {
 
   if (interrupt_data_.degree_pin)
     setup_output_pin(interrupt_data_.degree_pin, false);
+
+  timer1_attachInterrupt(&s_timer_intr);
+  timer1_write(50);
+  timer1_enable(TIM_DIV256, TIM_EDGE, TIM_SINGLE);
 }
 
 uint8_t LcdDigitsComponent::print(uint8_t start_pos, const char *in_str) {

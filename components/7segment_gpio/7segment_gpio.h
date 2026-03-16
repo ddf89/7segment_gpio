@@ -108,7 +108,6 @@ public:
 
 private:
   static constexpr auto TAG = "lcd_digits";
-  timer_t *timer = nullptr;
   optional<lcd_digits_writer_t> writer_{};
   LcdDigitsData interrupt_data_;
   LcdData display_data_;
