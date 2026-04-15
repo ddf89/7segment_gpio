@@ -195,6 +195,7 @@ static void IRAM_ATTR HOT s_timer_setup() {
 } // namespace
 
 void IRAM_ATTR HOT LcdDigitsData::timer_interrupt() {
+  return;
   if (cycles_to_skip > 0) {
     cycles_to_skip--;
     return;
