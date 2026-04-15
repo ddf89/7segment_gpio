@@ -185,16 +185,14 @@ static void IRAM_ATTR HOT s_timer_intr() {
   g_interrupt_data->timer_interrupt();
 }
 static void IRAM_ATTR HOT s_timer_setup() {
-  g_interrupt_data->timer_setup();
-}
-} // namespace
-
-void IRAM_ATTR HOT LcdDigitsData::timer_setup() {
-  timer1_isr_init();
+  // timer1_isr_init();
+  InterruptLock lock;
   timer1_attachInterrupt(s_timer_intr);     
   timer1_enable(TIM_DIV16, TIM_EDGE, TIM_LOOP);
   timer1_write(10000);
+
 }
+} // namespace
 
 void IRAM_ATTR HOT LcdDigitsData::timer_interrupt() {
   if (cycles_to_skip > 0) {
