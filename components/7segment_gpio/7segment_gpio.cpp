@@ -258,6 +258,7 @@ void IRAM_ATTR HOT LcdDigitsData::timer_interrupt() {
 
 void LcdDigitsComponent::set_segment_pins(std::vector<GPIOPin *> segment_pins) {
   ESP_LOGV(TAG, "Setting up segment pins");
+  InterruptLock lock;
   interrupt_data_.segment_pins = std::move(segment_pins);
   interrupt_data_.segment_pins.resize(
       std::min(size_t(8), interrupt_data_.segment_pins.size()));
@@ -265,16 +266,19 @@ void LcdDigitsComponent::set_segment_pins(std::vector<GPIOPin *> segment_pins) {
 
 void LcdDigitsComponent::set_degree_pin(GPIOPin *arg) {
   ESP_LOGV(TAG, "Setting up degree pin");
+  InterruptLock lock;
   interrupt_data_.degree_pin = arg;
 }
 
 void LcdDigitsComponent::set_colon_pin(GPIOPin *arg) {
   ESP_LOGV(TAG, "Setting up colon");
+  InterruptLock lock;
   interrupt_data_.colon_pin = arg;
 }
 
 void LcdDigitsComponent::set_digit_pins(std::vector<GPIOPin *> digit_pins) {
   ESP_LOGV(TAG, "Setting up digit pins");
+  InterruptLock lock;
   interrupt_data_.digit_pins = std::move(digit_pins);
   interrupt_data_.digit_pins.resize(
       std::min(size_t(max_digit_count), interrupt_data_.digit_pins.size()));
@@ -347,20 +351,20 @@ void LcdDigitsComponent::set_mode(LcdDigitsComponent::Mode mode) {
 
   // InterruptLock lock;
 
-  switch (mode) {
-  case BufferMode:
-    timer1_isr_init();
-    timer1_attachInterrupt(s_timer_intr);     
-    timer1_enable(TIM_DIV16, TIM_EDGE, TIM_LOOP);
-    timer1_write(250);
+  // switch (mode) {
+  // case BufferMode:
+  //   timer1_isr_init();
+  //   timer1_attachInterrupt(s_timer_intr);     
+  //   timer1_enable(TIM_DIV16, TIM_EDGE, TIM_LOOP);
+  //   timer1_write(250);
 
-    break;
-  case ProgressMode:
-    timer1_disable();
-    timer1_detachInterrupt();
+  //   break;
+  // case ProgressMode:
+  //   timer1_disable();
+  //   timer1_detachInterrupt();
 
-    break;
-  }
+  //   break;
+  // }
   mode_ = mode;
 }
 
@@ -433,6 +437,11 @@ void LcdDigitsComponent::setup() {
 
   if (interrupt_data_.degree_pin)
     setup_output_pin(interrupt_data_.degree_pin, false);
+
+  timer1_isr_init();
+  timer1_attachInterrupt(s_timer_intr);     
+  timer1_enable(TIM_DIV16, TIM_EDGE, TIM_LOOP);
+  timer1_write(250);
 }
 
 uint8_t LcdDigitsComponent::print(uint8_t start_pos, const char *in_str) {

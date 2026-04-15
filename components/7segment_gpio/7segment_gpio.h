@@ -50,7 +50,7 @@ struct LcdDigitsData : LcdData {
    */
   bool compensate_brightness = false;
 
-  DisplayType display_type = CommonAnode;
+  DisplayType display_type = CommonCathode;
 
   /**
    * @brief Iterate digits or segments
