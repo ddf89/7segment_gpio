@@ -345,13 +345,13 @@ void LcdDigitsComponent::set_mode(LcdDigitsComponent::Mode mode) {
   if (mode_ == mode)
     return;
 
-  InterruptLock lock;
+  // InterruptLock lock;
 
   switch (mode) {
   case BufferMode:
     timer1_isr_init();
     timer1_attachInterrupt(s_timer_intr);     
-    timer1_enable(TIM_DIV16, TIM_EDGE, TIM_SINGLE);
+    timer1_enable(TIM_DIV16, TIM_EDGE, TIM_LOOP);
     timer1_write(250);
 
     break;
