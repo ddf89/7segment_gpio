@@ -187,7 +187,7 @@ static void IRAM_ATTR HOT s_timer_intr() {
 }
 static void IRAM_ATTR HOT s_timer_setup() {
   timer1_isr_init();
-  // InterruptLock lock;
+  // // InterruptLock lock;
   timer1_attachInterrupt(s_timer_intr);     
   timer1_enable(TIM_DIV16, TIM_EDGE, TIM_LOOP);
   timer1_write(5000);
@@ -266,7 +266,7 @@ void IRAM_ATTR HOT LcdDigitsData::timer_interrupt() {
 
 void LcdDigitsComponent::set_segment_pins(std::vector<GPIOPin *> segment_pins) {
   ESP_LOGV(TAG, "Setting up segment pins");
-  InterruptLock lock;
+  // // InterruptLock lock;
   interrupt_data_.segment_pins = std::move(segment_pins);
   interrupt_data_.segment_pins.resize(
       std::min(size_t(8), interrupt_data_.segment_pins.size()));
@@ -274,19 +274,19 @@ void LcdDigitsComponent::set_segment_pins(std::vector<GPIOPin *> segment_pins) {
 
 void LcdDigitsComponent::set_degree_pin(GPIOPin *arg) {
   ESP_LOGV(TAG, "Setting up degree pin");
-  InterruptLock lock;
+  // InterruptLock lock;
   interrupt_data_.degree_pin = arg;
 }
 
 void LcdDigitsComponent::set_colon_pin(GPIOPin *arg) {
   ESP_LOGV(TAG, "Setting up colon");
-  InterruptLock lock;
+  // InterruptLock lock;
   interrupt_data_.colon_pin = arg;
 }
 
 void LcdDigitsComponent::set_digit_pins(std::vector<GPIOPin *> digit_pins) {
   ESP_LOGV(TAG, "Setting up digit pins");
-  InterruptLock lock;
+  // InterruptLock lock;
   interrupt_data_.digit_pins = std::move(digit_pins);
   interrupt_data_.digit_pins.resize(
       std::min(size_t(max_digit_count), interrupt_data_.digit_pins.size()));
@@ -298,22 +298,22 @@ void LcdDigitsComponent::set_writer(lcd_digits_writer_t &&writer) {
 }
 void LcdDigitsComponent::set_display_type(DisplayType arg) {
   ESP_LOGV(TAG, "set display type: %d", arg);
-  InterruptLock lock;
+  // InterruptLock lock;
   interrupt_data_.display_type = arg;
 }
 void LcdDigitsComponent::set_compensate_brightness(bool arg) {
   ESP_LOGV(TAG, "Setting up brightness to %d", arg);
-  InterruptLock lock;
+  // InterruptLock lock;
   interrupt_data_.compensate_brightness = arg;
 }
 void LcdDigitsComponent::set_iterate_digits(bool arg) {
   ESP_LOGV(TAG, "Setting up iterate digits to %d", arg);
-  InterruptLock lock;
+  // InterruptLock lock;
   interrupt_data_.iterate_digits = arg;
 }
 void LcdDigitsComponent::set_intensity(uint8_t arg) {
   ESP_LOGV(TAG, "Setting up intensity to %d", arg);
-  InterruptLock lock;
+  // InterruptLock lock;
   interrupt_data_.intensity_delay = (15 - arg);
 };
 
@@ -335,7 +335,7 @@ void LcdDigitsComponent::update() {
   if (writer_.has_value())
     (*writer_)(*this);
   ESP_LOGV(TAG, "Updating interrupt data");
-  InterruptLock lock;
+  // InterruptLock lock;
   static_cast<LcdData &>(interrupt_data_) = display_data_;
 }
 
@@ -357,7 +357,7 @@ void LcdDigitsComponent::set_mode(LcdDigitsComponent::Mode mode) {
   if (mode_ == mode)
     return;
 
-  // InterruptLock lock;
+  // // InterruptLock lock;
 
   // switch (mode) {
   // case BufferMode:
