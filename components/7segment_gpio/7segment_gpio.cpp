@@ -349,9 +349,10 @@ void LcdDigitsComponent::set_mode(LcdDigitsComponent::Mode mode) {
 
   switch (mode) {
   case BufferMode:
-    timer1_attachInterrupt(s_timer_intr);
+    timer1_isr_init();
+    timer1_attachInterrupt(s_timer_intr);     
     timer1_enable(TIM_DIV16, TIM_EDGE, TIM_SINGLE);
-    timer1_write(50000000);
+    timer1_write(250);
 
     break;
   case ProgressMode:
@@ -448,7 +449,7 @@ uint8_t LcdDigitsComponent::print(uint8_t start_pos, const char *in_str) {
       data = ASCII_TO_RAW[*str - ' '];
 
     if (data == UNKNOWN_CHAR) {
-      ESP_LOGW(TAG,
+      ESP_LOGV(TAG,
                "Encountered character '%c' with no representation while "
                "translating string!",
                *str);
@@ -467,7 +468,8 @@ uint8_t LcdDigitsComponent::print(uint8_t start_pos, const char *in_str) {
     }
     pos++;
   }
-
+  
+  ESP_LOGV(TAG, "Done %s", in_str);
   return pos - start_pos;
 }
 
