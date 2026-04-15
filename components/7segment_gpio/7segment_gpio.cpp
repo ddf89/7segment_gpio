@@ -448,7 +448,9 @@ void LcdDigitsComponent::setup() {
   if (interrupt_data_.degree_pin)
     setup_output_pin(interrupt_data_.degree_pin, false);
 
+  ESP_LOGV(TAG, "Timer1 Setup");
   s_timer_setup();
+  ESP_LOGV(TAG, "Timer1 Setup done");
 }
 
 uint8_t LcdDigitsComponent::print(uint8_t start_pos, const char *in_str) {
