@@ -63,6 +63,7 @@ struct LcdDigitsData : LcdData {
   uint8_t intensity_delay = 0;
 
   void IRAM_ATTR HOT timer_interrupt();
+  void IRAM_ATTR HOT timer_setup();
 };
 
 //   a

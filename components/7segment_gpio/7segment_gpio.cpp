@@ -186,6 +186,10 @@ static void IRAM_ATTR HOT s_timer_intr() {
 }
 } // namespace
 
+void IRAM_ATTR HOT LcdDigitsData::timer_setup() {
+
+}
+
 void IRAM_ATTR HOT LcdDigitsData::timer_interrupt() {
   if (cycles_to_skip > 0) {
     cycles_to_skip--;
@@ -438,10 +442,7 @@ void LcdDigitsComponent::setup() {
   if (interrupt_data_.degree_pin)
     setup_output_pin(interrupt_data_.degree_pin, false);
 
-  timer1_isr_init();
-  timer1_attachInterrupt(s_timer_intr);     
-  timer1_enable(TIM_DIV16, TIM_EDGE, TIM_LOOP);
-  timer1_write(250);
+  interrupt_data_->timer_setup();
 }
 
 uint8_t LcdDigitsComponent::print(uint8_t start_pos, const char *in_str) {
