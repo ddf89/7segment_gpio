@@ -36,10 +36,10 @@ CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend(
         cv.Optional(CONF_DIGIT_PINS): cv.ensure_list(gpio_output_pin_schema),
         cv.Required(CONF_SEGMENT_PINS): cv.ensure_list(gpio_output_pin_schema),
         cv.Optional(CONF_INTENSITY, default=15): cv.int_range(min=0, max=15),
-        cv.Optional(CONF_DISPLAY_TYPE, default="COMMON_ANODE"): cv.enum(
+        cv.Optional(CONF_DISPLAY_TYPE, default="COMMON_CATHODE"): cv.enum(
             DISPLAY_TYPE, upper=True
         ),
-        cv.Optional(CONF_ITERATE_DIGITS, default=True): cv.boolean,
+        cv.Optional(CONF_ITERATE_DIGITS, default=False): cv.boolean,
         cv.Optional(CONF_COMPENSATE_BRIGHTNESS, default=False): cv.boolean,
         cv.Optional(CONF_INTENSITY, default=15): cv.int_range(min=0, max=15),
         cv.Optional(CONF_COLON_PIN): gpio_output_pin_schema,
@@ -49,12 +49,6 @@ CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend(
 
 
 async def to_code(config):
-    if CORE.is_esp8266:
-        # ac_dimmer uses setTimer1Callback which requires the waveform generator
-        from esphome.components.esp8266.const import require_waveform
-
-        require_waveform()
-
     var = cg.new_Pvariable(config[CONF_ID])
     if cv.Version.parse(ESPHOME_VERSION) < cv.Version.parse("2023.12.0"):
         await cg.register_component(var, config)
