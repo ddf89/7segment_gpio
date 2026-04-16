@@ -33,7 +33,7 @@ struct LcdData {
   bool degree_on = false;
 };
 
-// enum DisplayType { CommonAnode, CommonCathode };
+enum DisplayType { CommonAnode, CommonCathode };
 
 struct LcdDigitsData : LcdData {
   std::vector<GPIOPin *> digit_pins = {
