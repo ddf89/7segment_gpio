@@ -108,78 +108,6 @@ constexpr uint8_t ASCII_TO_RAW[95] = {
     0b01100011,   // '~', ord 0x7E (degree symbol)
 };
 
-/// Starts from 0x0410
-constexpr uint8_t CYRILLIC_TO_RAW[] = {
-    0b01110111,   // `А` 0x0410
-    0b01011111,   // `Б` 0x0411
-    0b01111111,   // `В` 0x0412
-    0b01000110,   // `Г` 0x0413
-    UNKNOWN_CHAR, // `Д` 0x0414
-    0b01001111,   // `Е` 0x0415
-    UNKNOWN_CHAR, // `Ж` 0x0416
-    0b01111001,   // `З` 0x0417
-    UNKNOWN_CHAR, // `И` 0x0418
-    UNKNOWN_CHAR, // `Й` 0x0419
-    UNKNOWN_CHAR, // `К` 0x041a
-    UNKNOWN_CHAR, // `Л` 0x041b
-    UNKNOWN_CHAR, // `М` 0x041c
-    0b00110111,   // `Н` 0x041d
-    0b01111110,   // `О` 0x041e
-    0b01110110,   // `П` 0x041f
-    0b01100111,   // `Р` 0x0420
-    0b01001110,   // `С` 0x0421
-    UNKNOWN_CHAR, // `Т` 0x0422
-    0b00111011,   // `У` 0x0423
-    UNKNOWN_CHAR, // `Ф` 0x0424
-    UNKNOWN_CHAR, // `Х` 0x0425
-    UNKNOWN_CHAR, // `Ц` 0x0426
-    0b00110011,   // `Ч` 0x0427
-    UNKNOWN_CHAR, // `Ш` 0x0428
-    UNKNOWN_CHAR, // `Щ` 0x0429
-    UNKNOWN_CHAR, // `Ъ` 0x042a
-    UNKNOWN_CHAR, // `Ы` 0x042b
-    0b00011111,   // `Ь` 0x042c
-    0b01111001,   // `Э` 0x042d
-    UNKNOWN_CHAR, // `Ю` 0x042e
-    UNKNOWN_CHAR, // `Я` 0x042f
-
-    UNKNOWN_CHAR, // `а` 0x0430
-    UNKNOWN_CHAR, // `б` 0x0431
-    UNKNOWN_CHAR, // `в` 0x0432
-    0b00000011,   // `г` 0x0433
-    0b01111101,   // `д` 0x0434
-    UNKNOWN_CHAR, // `е` 0x0435
-    UNKNOWN_CHAR, // `ж` 0x0436
-    UNKNOWN_CHAR, // `з` 0x0437
-    0b00011100,   // `и` 0x0438
-    0b01011100,   // `й` 0x0439
-    UNKNOWN_CHAR, // `к` 0x043a
-    UNKNOWN_CHAR, // `л` 0x043b
-    UNKNOWN_CHAR, // `м` 0x043c
-    UNKNOWN_CHAR, // `н` 0x043d
-    UNKNOWN_CHAR, // `о` 0x043e
-    UNKNOWN_CHAR, // `п` 0x043f
-    UNKNOWN_CHAR, // `р` 0x0440
-    UNKNOWN_CHAR, // `с` 0x0441
-    UNKNOWN_CHAR, // `т` 0x0442
-    UNKNOWN_CHAR, // `у` 0x0443
-    UNKNOWN_CHAR, // `ф` 0x0444
-    UNKNOWN_CHAR, // `х` 0x0445
-    UNKNOWN_CHAR, // `ц` 0x0446
-    UNKNOWN_CHAR, // `ч` 0x0447
-    UNKNOWN_CHAR, // `ш` 0x0448
-    UNKNOWN_CHAR, // `щ` 0x0449
-    UNKNOWN_CHAR, // `ъ` 0x044a
-    UNKNOWN_CHAR, // `ы` 0x044b
-    UNKNOWN_CHAR, // `ь` 0x044c
-    UNKNOWN_CHAR, // `э` 0x044d
-    UNKNOWN_CHAR, // `ю` 0x044e
-    UNKNOWN_CHAR, // `я` 0x044f
-
-    // UNKNOWN_CHAR, // `Ё` 0x0401
-    // UNKNOWN_CHAR, // `ё` 0x0451
-};
-
 LcdDigitsData *g_interrupt_data = nullptr;
 static void IRAM_ATTR HOT s_timer_intr() {
 
@@ -187,23 +115,20 @@ static void IRAM_ATTR HOT s_timer_intr() {
 }
 static void IRAM_ATTR HOT s_timer_setup() {
   timer1_isr_init();
-  // // InterruptLock lock;
+}
+}
+static void IRAM_ATTR HOT s_timer_enable() {
   timer1_attachInterrupt(s_timer_intr);     
   timer1_enable(TIM_DIV16, TIM_EDGE, TIM_LOOP);
-  timer1_write(5000);
+  timer1_write(250);
 }
-} // namespace
 
 void IRAM_ATTR HOT LcdDigitsData::timer_interrupt() {
-  return;
+  // return;
   if (cycles_to_skip > 0) {
     cycles_to_skip--;
     return;
   }
-
-  // run at least with 1kHz
-  const uint32_t min_dt_us = 1000;
-  const uint32_t now = micros();
 
   auto invert_if_not = [](bool value, bool condition) {
     return condition ? value : !value;
@@ -265,9 +190,14 @@ void IRAM_ATTR HOT LcdDigitsData::timer_interrupt() {
   cycles_to_skip = intensity_delay + (compensate_brightness ? bit_count : 0);
 }
 
+void LcdDigitsComponent::enable_timer() {
+  ESP_LOGV(TAG, "enabling timer");
+  s_timer_enable();
+}
+
 void LcdDigitsComponent::set_segment_pins(std::vector<GPIOPin *> segment_pins) {
   ESP_LOGV(TAG, "Setting up segment pins");
-  // // InterruptLock lock;
+  InterruptLock lock;
   interrupt_data_.segment_pins = std::move(segment_pins);
   interrupt_data_.segment_pins.resize(
       std::min(size_t(8), interrupt_data_.segment_pins.size()));
@@ -275,19 +205,19 @@ void LcdDigitsComponent::set_segment_pins(std::vector<GPIOPin *> segment_pins) {
 
 void LcdDigitsComponent::set_degree_pin(GPIOPin *arg) {
   ESP_LOGV(TAG, "Setting up degree pin");
-  // InterruptLock lock;
+  InterruptLock lock;
   interrupt_data_.degree_pin = arg;
 }
 
 void LcdDigitsComponent::set_colon_pin(GPIOPin *arg) {
   ESP_LOGV(TAG, "Setting up colon");
-  // InterruptLock lock;
+  InterruptLock lock;
   interrupt_data_.colon_pin = arg;
 }
 
 void LcdDigitsComponent::set_digit_pins(std::vector<GPIOPin *> digit_pins) {
   ESP_LOGV(TAG, "Setting up digit pins");
-  // InterruptLock lock;
+  InterruptLock lock;
   interrupt_data_.digit_pins = std::move(digit_pins);
   interrupt_data_.digit_pins.resize(
       std::min(size_t(max_digit_count), interrupt_data_.digit_pins.size()));
@@ -299,22 +229,22 @@ void LcdDigitsComponent::set_writer(lcd_digits_writer_t &&writer) {
 }
 void LcdDigitsComponent::set_display_type(DisplayType arg) {
   ESP_LOGV(TAG, "set display type: %d", arg);
-  // InterruptLock lock;
+  InterruptLock lock;
   interrupt_data_.display_type = arg;
 }
 void LcdDigitsComponent::set_compensate_brightness(bool arg) {
   ESP_LOGV(TAG, "Setting up brightness to %d", arg);
-  // InterruptLock lock;
+  InterruptLock lock;
   interrupt_data_.compensate_brightness = arg;
 }
 void LcdDigitsComponent::set_iterate_digits(bool arg) {
   ESP_LOGV(TAG, "Setting up iterate digits to %d", arg);
-  // InterruptLock lock;
+  InterruptLock lock;
   interrupt_data_.iterate_digits = arg;
 }
 void LcdDigitsComponent::set_intensity(uint8_t arg) {
   ESP_LOGV(TAG, "Setting up intensity to %d", arg);
-  // InterruptLock lock;
+  InterruptLock lock;
   interrupt_data_.intensity_delay = (15 - arg);
 };
 
@@ -336,7 +266,7 @@ void LcdDigitsComponent::update() {
   if (writer_.has_value())
     (*writer_)(*this);
   ESP_LOGV(TAG, "Updating interrupt data");
-  // InterruptLock lock;
+  InterruptLock lock;
   static_cast<LcdData &>(interrupt_data_) = display_data_;
 }
 
@@ -352,74 +282,6 @@ void LcdDigitsComponent::set_degree_on(bool arg) {
 void LcdDigitsComponent::set_colon_on(bool arg) {
   ESP_LOGV(TAG, "Setting colon on %d", arg);
   display_data_.colon_on = arg;
-}
-
-void LcdDigitsComponent::set_mode(LcdDigitsComponent::Mode mode) {
-  if (mode_ == mode)
-    return;
-
-  // // InterruptLock lock;
-
-  // switch (mode) {
-  // case BufferMode:
-  //   timer1_isr_init();
-  //   timer1_attachInterrupt(s_timer_intr);     
-  //   timer1_enable(TIM_DIV16, TIM_EDGE, TIM_LOOP);
-  //   timer1_write(250);
-
-  //   break;
-  // case ProgressMode:
-  //   timer1_disable();
-  //   timer1_detachInterrupt();
-
-  //   break;
-  // }
-  mode_ = mode;
-}
-
-void LcdDigitsComponent::set_progress(float progress) {
-  set_mode(ProgressMode);
-
-  const uint8_t total_digits = interrupt_data_.digit_pins.size();
-  const uint8_t total_steps = 6 * total_digits;
-  const uint8_t current_step = total_steps * progress;
-  const uint8_t current_digit = current_step / 6;
-  const uint8_t current_segment = 1 + current_step % 6;
-
-
-  auto invert_if_not = [](bool value, bool condition) {
-    return condition ? value : !value;
-  };
-
-  auto digit_level = [&](bool on) {
-    const auto digit_on_level = interrupt_data_.display_type == CommonAnode;
-    return invert_if_not(digit_on_level, on);
-  };
-
-  auto segment_level = [&](bool on) {
-    const auto segment_on_level = interrupt_data_.display_type != CommonAnode;
-    return invert_if_not(segment_on_level, on);
-  };
-
-  // off all digits
-  for (auto *pin : interrupt_data_.digit_pins)
-    if (pin)
-      pin->digital_write(digit_level(false));
-  // off all segments
-  for (auto *pin : interrupt_data_.segment_pins)
-    pin->digital_write(segment_level(false));
-  interrupt_data_.segment_pins[current_segment]->digital_write(segment_level(true));
-  if (auto pin = interrupt_data_.digit_pins[current_digit])
-    pin->digital_write(digit_level(true));
-}
-
-void LcdDigitsComponent::strftime(uint8_t pos, const char *format,
-                                  ESPTime time) {
-  ESP_LOGV(TAG, "Setting strftme pos: %ud, format: %s", pos, format);
-  char buffer[8];
-  size_t ret = time.strftime(buffer, sizeof(buffer), format);
-  if (ret > 0)
-    print(pos, buffer);
 }
 
 void LcdDigitsComponent::setup() {

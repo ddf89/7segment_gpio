@@ -33,7 +33,7 @@ struct LcdData {
   bool degree_on = false;
 };
 
-enum DisplayType { CommonAnode, CommonCathode };
+// enum DisplayType { CommonAnode, CommonCathode };
 
 struct LcdDigitsData : LcdData {
   std::vector<GPIOPin *> digit_pins = {
@@ -64,6 +64,7 @@ struct LcdDigitsData : LcdData {
 
   void IRAM_ATTR HOT timer_interrupt();
   void IRAM_ATTR HOT timer_setup();
+  void IRAM_ATTR HOT timer_enable();
 };
 
 //   a
@@ -73,8 +74,7 @@ struct LcdDigitsData : LcdData {
 //   d  .
 class LcdDigitsComponent : public PollingComponent {
 public:
-  enum Mode { BufferMode, ProgressMode, DisabledMode };
-
+  void enable_timer();
   void set_degree_pin(GPIOPin *arg);
   void set_colon_pin(GPIOPin *arg);
   void set_segment_pins(std::vector<GPIOPin *> segment_pins);
@@ -100,19 +100,18 @@ public:
    * @param raw
    */
   void set_raw(uint64_t raw);
-  void strftime(uint8_t pos, const char *format, ESPTime time);
   void set_degree_on(bool arg = true);
   void set_colon_on(bool arg = true);
 
-  void set_mode(Mode mode);
-  void set_progress(float progress);
+  // void set_mode(Mode mode);
+  // void set_progress(float progress);
 
 private:
   static constexpr auto TAG = "lcd_digits";
   optional<lcd_digits_writer_t> writer_{};
   LcdDigitsData interrupt_data_;
   LcdData display_data_;
-  Mode mode_ = DisabledMode;
+  // Mode mode_ = DisabledMode;
 };
 
 } // namespace lcd_digits
