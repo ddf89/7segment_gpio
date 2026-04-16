@@ -35,13 +35,12 @@ CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend(
         cv.GenerateID(): cv.declare_id(LcdDigitsComponent),
         cv.Optional(CONF_DIGIT_PINS): cv.ensure_list(gpio_output_pin_schema),
         cv.Required(CONF_SEGMENT_PINS): cv.ensure_list(gpio_output_pin_schema),
-        cv.Optional(CONF_INTENSITY, default=15): cv.int_range(min=0, max=15),
+        cv.Optional(CONF_INTENSITY, default=15): cv.int_range(min=0, max=25),
         cv.Optional(CONF_DISPLAY_TYPE, default="COMMON_CATHODE"): cv.enum(
             DISPLAY_TYPE, upper=True
         ),
         cv.Optional(CONF_ITERATE_DIGITS, default=False): cv.boolean,
         cv.Optional(CONF_COMPENSATE_BRIGHTNESS, default=False): cv.boolean,
-        cv.Optional(CONF_INTENSITY, default=15): cv.int_range(min=0, max=15),
         cv.Optional(CONF_COLON_PIN): gpio_output_pin_schema,
         cv.Optional(CONF_DEGREE_PIN): gpio_output_pin_schema,
     }
