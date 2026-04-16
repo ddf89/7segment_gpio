@@ -120,7 +120,7 @@ static void IRAM_ATTR HOT s_timer_setup() {
 static void IRAM_ATTR HOT s_timer_enable() {
   timer1_attachInterrupt(s_timer_intr);     
   timer1_enable(TIM_DIV16, TIM_EDGE, TIM_LOOP);
-  timer1_write(250);
+  timer1_write(100);
 }
 
 void IRAM_ATTR HOT LcdDigitsData::timer_interrupt() {
