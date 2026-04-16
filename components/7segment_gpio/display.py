@@ -35,7 +35,7 @@ CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend(
         cv.GenerateID(): cv.declare_id(LcdDigitsComponent),
         cv.Optional(CONF_DIGIT_PINS): cv.ensure_list(gpio_output_pin_schema),
         cv.Required(CONF_SEGMENT_PINS): cv.ensure_list(gpio_output_pin_schema),
-        cv.Optional(CONF_INTENSITY, default=15): cv.int_range(min=0, max=25),
+        cv.Optional(CONF_INTENSITY, default=15): cv.int_range(min=0, max=50),
         cv.Optional(CONF_DISPLAY_TYPE, default="COMMON_CATHODE"): cv.enum(
             DISPLAY_TYPE, upper=True
         ),
